@@ -173,7 +173,12 @@ Panel {
             sectionProc.running = true;
     }
 
+    // A move to the current section is a no-op on purpose: `omarchy bar move
+    // --section` without an index re-appends the widget and loses its position.
     function setSection(section) {
+        if (section === root.currentSection)
+            return;
+
         root.currentSection = section;
         moveSectionProc.command = ["omarchy", "bar", "move", root.moduleName, "--section", section];
         moveSectionProc.running = true;
@@ -229,7 +234,9 @@ Panel {
             }
         }
 
-        if (typeof parsed.section === "string" && parsed.section !== root.currentSection && ["left", "center", "right"].indexOf(parsed.section) !== -1)
+        // An empty currentSection means the live section is not known yet; moving
+        // then would re-append the widget and lose its position in the section.
+        if (root.currentSection !== "" && typeof parsed.section === "string" && parsed.section !== root.currentSection && ["left", "center", "right"].indexOf(parsed.section) !== -1)
             root.setSection(parsed.section);
     }
 
